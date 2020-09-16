@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+</head>
+<body>
+    水平居中：
+    第一种：行内元素
+    <div class="parent">
+        <p class="children">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quam at hic unde modi! Atque neque explicabo minima repudiandae libero quas, nihil harum modi, doloremque natus ducimus hic, iure earum reiciendis.</p>
+    </div>
+    第二种：块级元素
+    <div class="parent1">
+        <div class="children1">
+        </div>
+    </div>
+    第三种：子元素包含float: left
+    <div class="parent2">
+        <div class="children2">
+        </div>
+    </div>
+    第四种：使用flex
+    <div class="parent3">
+        <div class="children3">
+        </div>
+    </div>
+    第五种：使用transform属性
+    <div class="parent4">
+        <div class="children4">
+        </div>
+    </div>
+    第六种：使用绝对定位方式, 以及负值的margin-left, 子元素设置如下:[提出疑问，为什么margin-left 不支持百分比单位?]
+    <div class="parent5">
+        <div class="children5">
+        </div>
+    </div>
+    第七种：使用绝对定位方式, 以及left:0;right:0;margin:0 auto;
+    <div class="parent6">
+        <div class="children6">
+        </div>
+    </div>
+    垂直居中：
+    第一种：单行文本 若元素是单行文本, 则可设置 line-height 等于父元素高度
+    <div class="par">
+        <p class="chi">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatibus debitis dolores officia ducimus molestiae sed provident, reiciendis delectus dignissimos quibusdam excepturi veniam culpa velit ab? Tempora velit pariatur eum itaque.
+        </p>
+    </div>
+    第二种: 行内块级元素, 使用display: inline-block, vertical-align: middle和一个伪元素让内容块处于容器中央.
+    <div class="par1">
+        <div class="chi1">
+        </div>
+    </div>
+    第三种：元素高度不定,可用 vertical-align 属性, 而vertical-align只有在父层为 td 或者 th 时, 才会生效, 对于其他块级元素, 例如 div、p 等, 默认情况是不支持的. 为了使用vertical-align, 我们需要设置父元素display:table, 子元素 display:table-cell;vertical-align:middle;
+    <div class="par2">
+        <div class="chi2">
+        </div>
+    </div>
+    第四种：元素高度不定,使用flex
+    <div class="par3">
+        <div class="chi3">
+        </div>
+    </div>
+    第五种：元素高度不定,使用transform
+    <div class="par4">
+        <div class="chi4">
+        </div>
+    </div>
+    第六种: 元素高度固定, 使用 margin-top:-0.5高度;
+    <div class="par5">
+        <div class="chi5">
+        </div>
+    </div>
+    第七种: 元素高度固定, 使用 设置父元素相对定位(position:relative)
+    <div class="par6">
+        <div class="chi6">
+        </div>
+    </div>
+    <style>
+        /* 第一种**/
+        .parent{
+            width: 300px;
+            height: 300px;
+            background-color: antiquewhite;
+            text-align: center;
+        }
+        /* 第二种**/
+        .parent1{
+            width: 300px;
+            height: 300px;
+            background-color: antiquewhite;
+        }
+        .children1{
+            width: 200px;
+            height: 200px;
+            background-color: black;
+            margin: 0 auto;
+        }
+         /* 第三种**/
+         .parent2{
+            width: fit-content;
+            height: 300px;
+            background-color: antiquewhite;
+            margin: 0 auto;
+        }
+        .children2{
+            width: 200px;
+            height: 200px;
+            background-color: black;
+            float: left;
+        }
+         /* 第四种**/
+         .parent3{
+            width: 300px;
+            height: 300px;
+            background-color: antiquewhite;
+            display: flex;
+            justify-content: center;
+        }
+        .children3{
+            width: 200px;
+            height: 200px;
+            background-color: black;
+        }
+         /* 第五种**/
+         .parent4{
+            width: 300px;
+            height: 300px;
+            background-color: antiquewhite;
+            position: relative;
+        }
+        .children4{
+            width: 200px;
+            height: 200px;
+            background-color: black;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        /* 第六种**/
+        .parent5{
+            width: 300px;
+            height: 300px;
+            background-color: antiquewhite;
+            position: relative;
+        }
+        .children5{
+            width: 200px;
+            height: 200px;
+            background-color: black;
+            position: absolute;
+            left: 50%;
+            margin-left: -100px;
+        }
+        /* 第七种**/
+        .parent6{
+            width: 300px;
+            height: 300px;
+            background-color: antiquewhite;
+            position: relative;
+        }
+        .children6{
+            width: 200px;
+            height: 200px;
+            background-color: black;
+            position: absolute;
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+        }
+        /* 第一种**/ 
+        .par{
+            width: 300px;
+            height: 300px;
+            background-color: antiquewhite;
+            overflow: hidden;
+        }
+        .chi{
+            line-height: 300px;
+        }
+         /* 第二种**/ 
+        .par1::after, .chi1{
+            display:inline-block;
+            vertical-align:middle;
+        }
+        .par1::after{
+            content:'';
+            height:100%;
+        }
+         .par1{
+            width: 300px;
+            height: 300px;
+            background-color: antiquewhite;
+            overflow: hidden;
+        }
+        .chi1{
+            width: 200px;
+            height: 200px;
+            background-color: black;
+        }
+        /* 第三种**/ 
+        .par2{
+            background-color: antiquewhite;
+            display: table;
+        }
+        .chi2{
+            width: 400px;
+            height: 400px;
+            background-color: black;
+            display:table-cell;
+            vertical-align:middle;
+        }
+        /* 第四种**/ 
+        .par3{
+            width: 300px;
+            height: 300px;
+            background-color: antiquewhite;
+            display: flex;
+            align-items: center;
+        }
+        .chi3{
+            width: 200px;
+            height: 200px;
+            background-color: black;
+        }
+         /* 第五种**/ 
+         .par4{
+            width: 300px;
+            height: 300px;
+            background-color: antiquewhite;
+            position: relative;
+        }
+        .chi4{
+            width: 200px;
+            height: 200px;
+            background-color: black;
+            position: absolute;
+            top: 50%;
+            transform: translate(0%,-50%);
+        }
+        /* 第六种**/ 
+        .par5{
+            width: 300px;
+            height: 300px;
+            background-color: antiquewhite;
+            position: relative;
+        }
+        .chi5{
+            width: 200px;
+            height: 200px;
+            background-color: black;
+            position: absolute;
+            top: 50%;
+            margin-top: -100px;
+        }
+        /* 第七种**/ 
+        .par6{
+            width: 300px;
+            height: 300px;
+            background-color: antiquewhite;
+            position: relative;
+        }
+        .chi6{
+            width: 200px;
+            height: 200px;
+            background-color: black;
+            position: absolute;
+            top:0;
+            bottom:0;
+            margin:auto 0;
+        }
+    </style>
+</body>
+</html>

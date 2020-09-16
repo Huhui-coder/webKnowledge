@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <script src="./index.js"></script>
+  </head>
+  <body>
+    <input type="text" id="input" />
+    <span id="text" value="333">32323</span>
+
+    <script>
+      window.onload = () => {
+        obj = {
+            a:2
+        }
+        let input = document.querySelector("#input");
+        let text = document.querySelector("#text");
+        input.value = obj.a;
+        input.addEventListener("keyup", function(e) {
+          obj.a = e.target.value;
+          text.innerHTML = obj.a
+        });
+      };
+    </script>
+  </body>
+</html>
