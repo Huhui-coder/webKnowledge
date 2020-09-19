@@ -375,4 +375,306 @@ var obj = new bindFoo(23)
 console.log(obj.friend) // kevin
 ```
 
+#2. 当使用 new 关键字时发生了什么?
+
+
+#3. 如何进行数据类型判断?
+首先,讲明数据类型判断有哪几种方法,一共有四种,`typeof`、`instanceof`、`toString`和`contructor`。
+四者之间的区别和应用场景。
+
+## typeof
+
+>它是一个运算符,运算过程中需要一个操作数,运算的结果就是这个操作数的类型，返回的是一个字符串
+但是它具有一定的局限性，对于对象类型的值只能返回一个"object",却不能精确地它的类型。
+特别地: 
+```js
+console.log(typeof undefined) // undefined
+console.log(typeof object) // object
+```
+对于null 这个类型,返回的也是"object"，究其原因,JavaScript是用32位比特来存储值的，且是通过值的低1位或3位来识别类型的,Object 的低3位是0, 所以 typeof {} // 结果为object, 而 null 的值全是0， 所以typeof null // 结果也为 object.
+另外 从 null 的常见用法来看, var obj = null, 表示 声明一个空对象,它的原始值为null。【期望此处将引用一个对象】
+
+## instanceof
+
+> 也是一个运算符，运算中需要两个操作数，运算符用于检测构造函数的 prototype 属性是否出现在某个实例对象的原型链上。
+特别地:
+```js
+var str = 'str' // 使用字面量生成的
+var str1 = new String('str') // 使用构造函数生成的
+console.log(str instanceof String) // false
+console.log(str1 instanceof String) // true
+console.log(str instanceof Object) // false
+console.log(str1 instanceof Object) // true
+```
+究其原因，是因为字面量生成的，没有挂载原型链这一操作，没有将实例对象的隐式原型链挂载到构造函数的原型链上。而 使用 new 关键字 生成的实例对象,是有这一步操作的。
+```js
+function objectFactory() {
+    var obj = new Object(),
+    Constructor = [].shift.call(arguments);
+    obj.__proto__ = Constructor.prototype;
+    Constructor.apply(obj, arguments);
+    return obj;
+};
+```
+## contructor
+
+> constructor是对象的一个属性，不是运算符，constructor属性指向对象的构造函数。
+举个例子：
+
+```js
+function User () {}
+const u = new User()
+console.log(u.constructor === User) // true
+```
+它的作用是跟 `typeof`、`instanceof`、`toString` 是有区别的，它主要是用来判断一个实例对象的构造函数是否为指定的构造函数。
+
+## toString(最精准的数据类型判断)
+
+>返回一个表示该对象的字符串，当对象表示为文本值或以期望的字符串方式被引用时，toString方法被自动调用。
+返回的字符串是[object Function]形式。
+
+```js
+let a = {}
+let b = [1, 2, 3]
+let c = '123'
+let d = function(){ console.log('fn') }
+
+console.log(a.toString())   // '[object Object]'
+console.log(b.toString())   // '1,2,3'
+console.log(c.toString())   // '123'
+console.log(d.toString())   // 'function(){ console.log('fn') }'
+```
+
+```js
+toString.call(()=>{})       // [object Function]
+toString.call({})           // [object Object]
+toString.call([])           // [object Array]
+toString.call('')           // [object String]
+toString.call(22)           // [object Number]
+toString.call(undefined)    // [object undefined]
+toString.call(null)         // [object null]
+toString.call(new Date)     // [object Date]
+toString.call(Math)         // [object Math]
+toString.call(window)       // [object Window]
+```
+
+#4.前端的异步编程
+首先搞懂，同步和异步的区别。
+同步: 在等待上一件事情结束之后，再去做下一件事情。
+异步：在上一件事情执行过程中,不等它结束，就去做下一件事情。
+那么哪些操作会造成异步操作呢?
+- setTimeout
+- ajax
+- promise
+- generator
+- async
+
+setTimeout
+
+```js
+fn = function () {
+    console.log(0)
+    setTimeout(() => {
+        console.log(1)
+    }, 0)
+}
+fn()
+```
+以上代码会依次执行 0 , 1 
+前端异步编程发展史: 回调函数=>Promise=>Generator=>async
+
+## Callback()
+
+第一个阶段回调函数,比如说一个ajax请求，下一个请求的参数依赖上一个请求的结果，那么就会形成回调函数的嵌套地狱.
+
+## Promise
+
+第二个阶段Promise,虽然它解决了回调函数的嵌套问题,但是仍然存在.then()函数的嵌套问题。可以使用Promise.all([])来解决，如果两个异步函数之间没有依赖关系。
+Promise的存在的问题: 
+
+- 错误被吃掉,Promise内部错误的代码并不会影响外部代码的执行
+- 单一值,Promise 只能有一个完成值或一个拒绝原因，然而在真实使用的时候，往往需要传递多个值，一般做法都是构造一个对象或数组。然后使用es6的解构赋值去获取。
+- 无法取消, Promise 一旦 新建就会立即执行,无法取消。
+- 无法得知pending状态, 当处于 pending 状态时，无法得知目前进展到哪一个阶段（刚刚开始还是即将完成）。
+## Generator
+
+第三个阶段Generator.
+
+```js
+function* fn2() {
+    yield 'hello';
+    yield 'world';
+    return 'ending';
+  }
+var hw = fn2();
+console.log(hw.next())
+console.log(hw.next())
+console.log(hw.next())
+```
+Generator 函数有多种理解角度。语法上，首先可以把它理解成，Generator 函数是一个状态机，封装了多个内部状态。
+执行 Generator 函数会返回一个遍历器对象，也就是说，Generator 函数除了状态机，还是一个遍历器对象生成函数。返回的遍历器对象，可以依次遍历 Generator 函数内部的每一个状态。
+
+在函数形式上，函数名上会有* 号表示这是一个Generator函数，在函数体中，会有`yield` 表示暂停执行，并且将`yield`后面的表达式的值作为返回对象的value值。
+
+在函数调用上,使用next()方法，调用函数使得指针移向下一个状态,也就是说，每次调用next方法，内部指针就从函数头部或上一次停下来的地方开始执行，直到遇到下一个yield表达式（或return语句）为止。返回的数据格式为 { value: 0, done: false }, value 表示本次状态的value, 由函数体内的 `yeild` 后面的表达式决定, done 表示 Generator函数是否执行完成。
+
+换言之，Generator 函数是分段执行的，yield表达式是暂停执行的标记，而next方法可以恢复执行。
+
+Generator 函数并不会自动执行，也就是说，每一次执行，都必须要显式的调用next()方法。而使用Generator 自动执行库co,是可以做到自动执行的。
+```js
+var co = require('co');
+
+function fetchData(url) {
+    return function(cb) {
+        setTimeout(function() {
+            cb(null, { status: 200, data: url })
+        }, 1000)
+    }
+}
+
+function* gen() {
+    var r1 = yield fetchData('https://api.github.com/users/github');
+    var r2 = yield fetchData('https://api.github.com/users/github/followers');
+    console.log([r1.data, r2.data].join('\n'));
+}
+co(gen);
+```
+以上代码会输出:
+https://api.github.com/users/github
+https://api.github.com/users/github/followers
+
+## async
+
+第四个阶段:async 
+async函数本质上是Generator 函数的语法糖。
+举个例子:
+
+```js
+// 使用 generator
+var fetch = require('node-fetch');
+var co = require('co');
+
+function* gen() {
+    var r1 = yield fetch('https://api.github.com/users/github');
+    var json1 = yield r1.json();
+    console.log(json1.bio);
+}
+
+co(gen);
+```
+```js
+// 使用 async
+var fetch = require('node-fetch');
+
+var fetchData = async function () {
+    var r1 = await fetch('https://api.github.com/users/github');
+    var json1 = await r1.json();
+    console.log(json1.bio);
+};
+
+fetchData();
+```
+本质上,其实 async 函数的实现原理，就是将 Generator 函数和自动执行器，包装在一个函数里。
+```js
+async function fn(args) {
+  // ...
+}
+
+// 等同于
+
+function fn(args) {
+  return spawn(function* () {
+    // ...
+  });
+}
+```
+spawn 函数指的是自动执行器，就比如说 co。
+
+再加上 async 函数返回一个 Promise 对象，你也可以理解为 async 函数是基于 Promise 和 Generator 的一层封装。
+
+相对于Promise， 使用async 函数的优势。
+- 代码更加简洁
+```js
+/**
+ * 示例一
+ */
+function fetch() {
+  return (
+    fetchData()
+    .then(() => {
+      return "done"
+    });
+  )
+}
+
+async function fetch() {
+  await fetchData()
+  return "done"
+};
+```
+- 捕获错误
+Promise是采用的在Promise的实例对象中使用reject 抛出错误，在 函数执行时使用.catch捕获错误。
+async 是采用的 try - catch 捕获错误。
+- 调试
+使用promise 时，打断点时，代码是不会按书写顺序执行的，它会按照运行时的顺序执行。
+使用async 时，打断点时，代码是会按书写顺序执行的.
+换言之，就是用同步的方式来书写异步的代码。
+
+async 函数可能会带来的问题
+- async 地狱, 本来没有执行顺序上的依赖关系，但是开发者为了书写方便，使函数执行变得有依赖关系了，从而损失了性能。
+```js
+(async () => {
+  const getList = await getList();
+  const getAnotherList = await getAnotherList();
+})();
+```
+以上代码，是必须得getList方法得到返回值了之后,后面的getAnotherList()才会执行，其实，他们完全可以异步执行。
+解决方案
+```js
+(async () => {
+  const listPromise = getList();
+  const anotherListPromise = getAnotherList();
+  await listPromise;
+  await anotherListPromise;
+})();
+```
+```js
+(async () => {
+  Promise.all([getList(), getAnotherList()]).then(...);
+})();
+```
+另外两个应用点。
+- 使用async 实现ajax 请求,继发
+- 使用async 实现ajax 请求,并发
+```js
+// 继发一
+async function loadData() {
+  var res1 = await fetch(url1);
+  var res2 = await fetch(url2);
+  var res3 = await fetch(url3);
+  return "whew all done";
+}
+// 继发二
+async function loadData(urls) {
+  for (const url of urls) {
+    const response = await fetch(url);
+    console.log(await response.text());
+  }
+}
+```
+```js
+// 并发一
+async function loadData() {
+  var res = await Promise.all([fetch(url1), fetch(url2), fetch(url3)]);
+  return "whew all done";
+}
+```
+
+
+
+#5.前端的事件循环机制
+分浏览器的事件循环和Node.js的事件循环
+
+#6.前端实现动画的方式有哪几种?
+
 
