@@ -670,11 +670,194 @@ async function loadData() {
 }
 ```
 
-
-
 #5.前端的事件循环机制
 分浏览器的事件循环和Node.js的事件循环
 
+## 浏览器端的事件循环机制
+
+首先来讨论 浏览器的事件循环机制
+
+>javascript从诞生之日起就是一门单线程的非阻塞的脚本语言。这是由其最初的用途来决定的：与浏览器交互。
+- 单线程
+- 非阻塞
+
+单线程意味着,javascript代码在执行的任何时候，都只有一个主线程来处理所有的任务。
+
+非阻塞则是当代码需要进行一项异步任务（无法立刻返回结果，需要花一定时间才能返回的任务，如I/O事件）的时候，主线程会挂起（pending）这个任务，然后在异步任务返回结果的时候再根据一定规则去执行相应的回调。
+
+那么非阻塞这个特性是如何来实现的呢?
+答案就是依靠 event Loop (事件循环)机制。
+事件循环机制由三部分组成
+
+- 执行上下文
+- 函数执行栈
+- 事件执行队列
+
+执行栈是同步代码执行时执行上下文存在的空间。事件队列是异步事件返回结果时按先后顺序排列所形成的。
+
+大部分的函数执行顺序可以依靠函数调用栈的规则执行，即当一个脚本第一次执行的时候，js引擎会解析这段代码，并将其中的同步代码按照执行顺序加入执行栈中，然后从头开始执行。如果当前执行的是一个方法，那么js会向执行栈中添加这个方法的执行环境，然后进入这个执行环境继续执行其中的代码。当这个执行环境中的代码 执行完毕并返回结果后，js会退出这个执行环境并把这个执行环境销毁，回到上一个方法的执行环境。。这个过程反复进行，直到执行栈中的代码全部执行完毕。
+
+而异步函数或者事件绑定中的代码执行顺序则是通过事件执行队列(任务队列)来决定的。
+而任务队列又可以分为 宏任务 和 微任务
+宏任务: script(整体代码), setTimeout/setInterval, I/O, UI rendering等。
+微任务: Promise。
+
+在一个事件循环中，异步事件返回结果后会被放到一个任务队列中。然而，根据这个异步事件的类型，这个事件实际上会被对应的宏任务队列或者微任务队列中去。并且在当前执行栈为空的时候，主线程会 查看微任务队列是否有事件存在。如果不存在，那么再去宏任务队列中取出一个事件并把对应的回到加入当前执行栈；如果存在，则会依次执行队列中事件对应的回调，直到微任务队列为空，然后去宏任务队列中取出最前面的一个事件，把对应的回调加入当前执行栈...如此反复，进入循环。
+
+**我们只需记住当当前执行栈执行完毕时会立刻先处理所有微任务队列中的事件，然后再去宏任务队列中取出一个事件。同一次事件循环中，微任务永远在宏任务之前执行。**
+
+```js
+setTimeout(() => {
+    console.log('timeout1')
+});
+
+new Promise((resovle) => {
+    console.log('promise1')
+    for (var i = 0; i < 1000; i++) {
+        i == 99 && resovle('resolve1')
+    }
+    console.log('promise2')
+}).then((res) => {
+    console.log('then1')
+    console.log(res)
+})
+console.log('gloab1')
+```
+以上代码的执行顺序为 
+promise1
+promise2
+gloab1
+then1
+resolve1
+timeout1
+首先执行宏任务中的script(整体代码),第一个遇到的是setTimeout 将其放入setTimeout宏任务队列中，然后又遇到了Promise实例,Promise构造函数中的第一个参数,是在new 创建时就立即执行的，因此不会进入任何其他的队列，先会输出'promise1'， 然后又遇到for 循环, 它也是不会进入其他的队列,立即执行resolve()函数, 再输出'promise2',再后面遇到.then()函数，将其放入Promise 微任务中, 继续向下执行，输出'gloab1'，至此全局任务(整体代码)执行完毕。
+第一个宏任务 script执行完毕后，开始执行之前放入任务队列中的微任务，执行.then()输出 then1 和 resolve1, 至此微任务队列执行完毕，再开始执行之前放入任务队列中的宏任务，执行 setTimeout中的代码，输出 timeout1.
+```js
+setTimeout(function () {
+    console.log(1);
+});
+
+new Promise(function (resolve, reject) {
+    console.log(2)
+    resolve(3)
+}).then(function (val) {
+    console.log(val);
+})
+
+console.log(0);
+```
+以上代码输出:
+2 0 3 1 
+
 #6.前端实现动画的方式有哪几种?
+分六种
+- js
+- css transition
+- css animation
+- svg (应用较少，暂不讨论)
+- canvas
+- requestAnimationFrame
+
+## js 方式:
+
+> 其主要思想是通过setInterval或setTimeout方法的回调函数来持续调用改变某个元素的CSS样式以达到元素样式变化的效果。
+
+存在的问题: 实现动画通常会导致页面频繁性重排重绘，消耗性能，一般应该在桌面端浏览器。在移动端上使用会有明显的卡顿。
+
+通常建议设置每个 setTimeout 的时间间隔为 16ms，一般认为人眼能辨识的流畅动画为每秒60帧，这里16ms比(1000ms/60)帧略小一些，但是一般可仍为该动画是流畅的。 
+
+## css transition方式；
+
+> transition是过度动画。但是transition并不能实现独立的动画，只能在某个标签元素样式或状态改变时进行平滑的动画效果过渡，而不是马上改变。
+注意: 在移动端开发中，直接使用transition动画会让页面变慢甚至卡顿。所以我们通常添加transform:translate3D(0,0,0)或transform:translateZ(0)来开启移动端动画的GPU加速，让动画过程更加流畅。
+
+## css animation方式：
+
+> animation 算是真正意义上的CSS3动画。通过对关键帧和循环次数的控制，页面标签元素会根据设定好的样式改变进行平滑过渡。而且关键帧状态的控制是通过百分比来控制的。
+注意: CSS3最大的优势是摆脱了js的控制，并且能利用硬件加速以及实现复杂动画效果。并且性能较好。
+
+[CSS](https://developer.mozilla.org/zh-CN/docs/Web/CSS) **animation** 属性是 [`animation-name`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation-name)，[`animation-duration`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation-duration), [`animation-timing-function`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation-timing-function)，[`animation-delay`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation-delay)，[`animation-iteration-count`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation-iteration-count)，[`animation-direction`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation-direction)，[`animation-fill-mode`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation-fill-mode) 和 [`animation-play-state`](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation-play-state) 属性的一个简写属性形式。
+
+```
+html
+    <span class="box">我的家园</span>
+css
+.box {
+      position: relative;
+    }
+    .box:hover::after {
+      content: "";
+      width: 100%;
+      height: 3px;
+      position: absolute;
+      left: 0;
+      bottom: -5px;
+      background-color: black;
+      animation: 0.8s linear slidein;
+    }
+    @keyframes slidein {
+      from {
+        transform: scaleX(0);
+      }
+      to {
+        transform: scaleX(1);
+      }
+    }
+```
+
+实现一个简单的鼠标hover 之后,底下的字体底边从中间慢慢延伸到两边的一个动画效果。
+
+## canvas 方式
+
+```js
+window.onload = (() => {
+    let canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext("2d");
+    let left = 0;
+    let timer = setInterval(function () {
+        ctx.clearRect(0, 0, 700, 550);
+        ctx.beginPath();
+        ctx.fillStyle = "#ccc";
+        ctx.fillRect(left, 0, 100, 100);
+        ctx.stroke();
+        if (left > 700) {
+            clearInterval(timer);
+        }
+        left += 1;
+    }, 16);
+})
+```
+> 通过getContext()获取元素的绘制对象，通过clearRect不断清空画布并在新的位置上使用fillStyle绘制新矩形内容实现页面动画效果。
+Canvas主要优势是可以应对页面中多个动画元素渲染较慢的情况，完全通过javascript来渲染控制动画的执行。可用于实现较复杂动画。
+
+## requestAnimationFrame方式
+
+> window.requestAnimationFrame() 告诉浏览器——你希望执行一个动画，并且要求浏览器在下次重绘之前调用指定的回调函数更新动画。该方法需要传入一个回调函数作为参数，该回调函数会在浏览器下一次重绘之前执行
+requestAnimationFrame是另一种Web API，原理与setTimeout和setInterval类似，都是通过javascript持续循环的方法调用来触发动画动作。但是requestAnimationFrame是浏览器针对动画专门优化形成的APi，在性能上比另两者要好。
+
+语法: 
+>window.requestAnimationFrame(callback);
+参数: callback 下一次重绘之前更新动画帧所调用的函数(即上面所说的回调函数)。该回调函数会被传入DOMHighResTimeStamp参数，该参数与performance.now()的返回值相同，它表示requestAnimationFrame() 开始去执行回调函数的时刻。
+
+返回值: 一个 long 整数，请求 ID ，是回调列表中唯一的标识。是个非零值，没别的意义。你可以传这个值给 window.cancelAnimationFrame() 以取消回调函数。
+
+```js
+window.onload = (() => {
+    const element = document.querySelector('#box');
+    let start;
+    function step(timestamp) {
+        if (start === undefined)
+            start = timestamp;
+        const elapsed = timestamp - start;
+        // `Math.min()` is used here to make sure that the element stops at exactly 200px.
+        element.style.transform = 'translateX(' + Math.min(0.1 * elapsed, 2000) + 'px)';
+
+        if (elapsed < 20000) { // Stop the animation after 2 seconds
+            window.requestAnimationFrame(step);
+        }
+    }
+    window.requestAnimationFrame(step);
+})
+```
 
 
