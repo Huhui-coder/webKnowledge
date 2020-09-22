@@ -1,4 +1,4 @@
-#1、你对`this`有了解吗，有自己实现过`call`,`apply`和`bind`吗？
+#1你对`this`有了解吗，有自己实现过`call`,`apply`和`bind`吗？
 **它们的作用: 改变this的指向，可以将this 传为null 这个时候 this 指向的是window. 执行的函数也可以有返回值。**
 
 **`call`,`apply` 二者之间的区别, 参数不同, call 只能一个一个传字符串， apply 能直接传一个数组**
