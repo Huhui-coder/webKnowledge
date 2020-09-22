@@ -862,5 +862,151 @@ window.onload = (() => {
     window.requestAnimationFrame(step);
 })
 ```
+# 7.讲讲闭包
+
+从以下几个方面来讲闭包：
+第一个闭包产生的原因:一个函数，返回了一个函数，并且这个返回的函数是用到了外部函数中的局部变量的,当外部函数被使用时，保持了内部函数的引用，所以就造成一个效果，在一个函数外部调用函数的局部变量。
+
+第二个闭包的常见作用:模块化编程,避免污染全局作用域。
+
+从词法作用域,开始聊起。
+看一个 简单的 函数
+```js
+function init() {
+    var name = "Mozilla"; // name 是一个被 init 创建的局部变量
+    function displayName() { // displayName() 是内部函数，一个闭包
+        alert(name); // 使用了父函数中声明的变量
+    }
+    displayName();
+}
+init();
+```
+因为一个内部函数是可以访问到外部函数的变量，所以 displayName() 可以使用父函数 init() 中声明的变量 name 。
+
+再将这个问题深化以下
+```js
+function makeFunc() {
+    var name = "Mozilla";
+    function displayName() {
+        alert(name);
+    }
+    return displayName;
+}
+
+var myFunc = makeFunc();
+myFunc();
+```
+
+在一个函数中,返回一个函数,而返回的这个函数内部调用了外部函数声明的变量。这就构成了一个闭包。
+
+在本例子中，myFunc 是执行 makeFunc 时创建的 displayName 函数实例的引用。displayName 的实例维持了一个对它的词法环境（变量 name 存在于其中）的引用。因此，当 myFunc 被调用时，变量 name 仍然可用，其值 Mozilla 就被传递到alert中。
+
+如何实现add(2)(5) === 7?
+
+```js
+function add(x) {
+    return function(y) {
+      return x + y;
+    };
+  }
+  
+  var addFunc = add(5)(2);
+  
+  console.log(addFunc); // 7
+```
+这道题就是使用了闭包。
+
+闭包的作用?
+
+- 用闭包模拟私有方法(闭包是自有一个作用域的，使用闭包不会影响到全局作用域)
+```js
+var makeCounter = function() {
+  var privateCounter = 0;
+  function changeBy(val) {
+    privateCounter += val;
+  }
+  return {
+    increment: function() {
+      changeBy(1);
+    },
+    decrement: function() {
+      changeBy(-1);
+    },
+    value: function() {
+      return privateCounter;
+    }
+  }  
+};
+
+var Counter1 = makeCounter();
+var Counter2 = makeCounter();
+console.log(Counter1.value()); /* logs 0 */
+Counter1.increment();
+Counter1.increment();
+console.log(Counter1.value()); /* logs 2 */
+Counter1.decrement();
+console.log(Counter1.value()); /* logs 1 */
+console.log(Counter2.value()); /* logs 0 */
+```
+- 自执行函数(适用于模块化编程, 同样不会污染全局作用域)
+```js
+(()=>{
+    Hit = {
+        name: 'hit',
+        age: 12
+    }
+    return window.Hit = Hit
+})()
+
+console.log(window.Hit)
+```
 
 
+性能考量
+
+闭包在处理速度和内存消耗方面对脚本性能具有负面影响。
+
+通常来说，函数的活动对象会随着执行期上下文一起销毁，但是，由于闭包引用另外一个函数的活动对象，因此这个活动对象无法被销毁，这意味着，闭包比一般的函数需要更多的内存消耗。
+
+# 8.从输入url地址栏,发生了什么?由此来介绍如何性能优化。
+
+[性能优化](https://juejin.im/post/6844903794279448590#heading-12)
+
+首先讲讲输入url后，发生了哪些事情?
+- 浏览器向 DNS 服务器请求解析该 URL 中的域名所对应的 IP 地址 [DNS解析]
+- 建立TCP连接 [三次握手]
+- 浏览器发出读取文件(URL中域名后面部分对应的文件)的 HTPP请求,该请求报文作为TCP三次握手的第三个报文的数据发送给服务器。 [浏览器发送读取文件内容的HTTP请求到服务器]
+- 服务器对浏览器请求作出响应,并把对应的html文本发送给浏览器。 [服务器发送HTML数据至浏览器]
+- 浏览器开始渲染 html 内容 [浏览器渲染HTML]
+- 释放 TCP 链接 [四次挥手]
+
+简单聊聊性能优化
+- 在通信比较频繁的应用中, 使用websocket 代替 http 。因为 websocket 具备，一次TCP握手，就一直保持连接，而且对于二进制传输有着很好的支持性，可以应用于即时通信。还可以使服务端主动发消息到客户端，这是HTTP所不具备的。
+
+- 配置懒加载, 图片懒加载, vue 路由懒加载。
+
+- Nginx使用gzip 来进行HTPP的压缩
+
+- 使用 requestAnimationFrame 来触发 js 动画。它能保证在 在每一帧的开始执行动画。而传统的js 动画执行方式是使用(setTimeout或者setInterval)，由于 js 执行机制的问题, 它是没办法保证在每一帧的最开始就执行动画的，如果不能保证在每一帧的最开始执行动画，那么即便我们保障每一帧的总耗时小于16ms，但是执行的时机如果在每一帧的中间或最后，最后的结果依然是没有办法每隔16ms让屏幕产生一次变化。还是会卡。
+
+- 尽量使用 translateZ(0) 开启 硬件加速。这个问题是因为使用transform和opacity做CSS动画的时候，会将元素提升为一个复合层；而使用js操作css属性做动画时，必须使用translateZ或will-change才能将元素强行提升至一个复合层。
+
+元素本身使用transform和opacity做CSS动画的时候，会提前告诉GPU动画如何开始和结束及所需要的指令；所以会创建一个复合层（渲染层），并把页面所有的复合层发送给GPU；作为图像缓存，然后动画的发生仅仅是复合层间相对移动。
+
+而使用js做动画，js必须在动画的每一帧计算元素的状态；发送给GPU，但不会将元素提升至一个复合层；所以想让元素提升至一个复合层，必须使用translateZ或will-change: transform, opacity。
+
+使用 translate3D 会让浏览器开启硬件加速，性能当然就提高了。translateZ变成3d效果，走GPU渲染。这样也有缺点就是耗电和发热问题。同样的canvas也会开启gpu渲染。
+
+# 9. 讲讲浏览器缓存
+
+- preload，prefetch 和 preconnect [preload](https://juejin.im/post/6844903646996480007)
+
+- defer、async 
+
+- service-worker, PWA渐进式web应用 [PWA](https://lavas.baidu.com/pwa/README)
+
+- localStorage、sessionStorage、cookie、session
+
+# 10. 讲讲跨域, cookie 可以跨域吗? localStorage 可以跨域吗？
+
+解决跨域的方法: `JSOP`、`CORS`、`postmessage`、`websocket`、Nginx 反向代理等等。
