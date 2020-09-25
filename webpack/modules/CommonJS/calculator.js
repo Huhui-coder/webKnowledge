@@ -1,6 +1,7 @@
-module.exports = {
-    name: 'hit',
-    add: function (a, b) {
-        return a + b
-    }
+const name = 'lee';
+let age = 29;
+exports.name = name;
+exports.age = age;
+exports.setAge = function () {
+    age++;
 }
