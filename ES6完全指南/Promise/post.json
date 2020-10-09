@@ -1,0 +1,181 @@
+{
+    "code": 200,
+    "message": "ok",
+    "data": [
+        {
+            "article_id": 106127636,
+            "digg_num": 3,
+            "is_digg": false
+        },
+        {
+            "article_id": 106539159,
+            "digg_num": 0,
+            "is_digg": false
+        },
+        {
+            "article_id": 106440372,
+            "digg_num": 0,
+            "is_digg": false
+        },
+        {
+            "article_id": 106519448,
+            "digg_num": 6,
+            "is_digg": false
+        },
+        {
+            "article_id": 106304188,
+            "digg_num": 1,
+            "is_digg": false
+        },
+        {
+            "article_id": 105117530,
+            "digg_num": 5,
+            "is_digg": false
+        },
+        {
+            "article_id": 106155456,
+            "digg_num": 6,
+            "is_digg": false
+        },
+        {
+            "article_id": 105862763,
+            "digg_num": 2,
+            "is_digg": false
+        },
+        {
+            "article_id": 106267832,
+            "digg_num": 8,
+            "is_digg": false
+        },
+        {
+            "article_id": 106351873,
+            "digg_num": 117,
+            "is_digg": false
+        },
+        {
+            "article_id": 105142534,
+            "digg_num": 7,
+            "is_digg": false
+        },
+        {
+            "article_id": 105950615,
+            "digg_num": 0,
+            "is_digg": false
+        },
+        {
+            "article_id": 106203837,
+            "digg_num": 21,
+            "is_digg": false
+        },
+        {
+            "article_id": 106372090,
+            "digg_num": 13,
+            "is_digg": false
+        },
+        {
+            "article_id": 104781600,
+            "digg_num": 51,
+            "is_digg": false
+        },
+        {
+            "article_id": 105736792,
+            "digg_num": 32,
+            "is_digg": false
+        },
+        {
+            "article_id": 106010244,
+            "digg_num": 0,
+            "is_digg": false
+        },
+        {
+            "article_id": 104935363,
+            "digg_num": 0,
+            "is_digg": false
+        },
+        {
+            "article_id": 106520824,
+            "digg_num": 0,
+            "is_digg": false
+        },
+        {
+            "article_id": 106495771,
+            "digg_num": 0,
+            "is_digg": false
+        },
+        {
+            "article_id": 105872559,
+            "digg_num": 0,
+            "is_digg": false
+        },
+        {
+            "article_id": 104987309,
+            "digg_num": 47,
+            "is_digg": false
+        },
+        {
+            "article_id": 104973347,
+            "digg_num": 1,
+            "is_digg": false
+        },
+        {
+            "article_id": 105236617,
+            "digg_num": 2,
+            "is_digg": false
+        },
+        {
+            "article_id": 104745900,
+            "digg_num": 38,
+            "is_digg": false
+        },
+        {
+            "article_id": 105423932,
+            "digg_num": 1,
+            "is_digg": false
+        },
+        {
+            "article_id": 105384452,
+            "digg_num": 0,
+            "is_digg": false
+        },
+        {
+            "article_id": 106401671,
+            "digg_num": 0,
+            "is_digg": false
+        },
+        {
+            "article_id": 106403779,
+            "digg_num": 0,
+            "is_digg": false
+        },
+        {
+            "article_id": 106295906,
+            "digg_num": 9,
+            "is_digg": false
+        },
+        {
+            "article_id": 105591805,
+            "digg_num": 0,
+            "is_digg": false
+        },
+        {
+            "article_id": 105102475,
+            "digg_num": 0,
+            "is_digg": false
+        },
+        {
+            "article_id": 105100351,
+            "digg_num": 1,
+            "is_digg": false
+        },
+        {
+            "article_id": 106073158,
+            "digg_num": 0,
+            "is_digg": false
+        },
+        {
+            "article_id": 104843101,
+            "digg_num": 54,
+            "is_digg": false
+        }
+    ]
+}

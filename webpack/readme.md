@@ -2,6 +2,7 @@
 - 优化打包速度
 - 优化打包文件的体积
 - 开启Nginx 文件对前端资源文件的gzip 压缩
+- 优化首屏加载速度
 # 优化打包速度
 ## 合理的配置mode参数与devtool参数
 mode可设置`development`和 `production`两个参数
@@ -43,16 +44,6 @@ mode可设置`development`和 `production`两个参数
 # 优化首屏加载速度
 
 ## 路由懒加载
-
-```js
-{
-    path: '/',
-    name: 'home',
-    component: () => import('../views/Home.vue')
-  },
-```
-
-## 组件异步加载
 
 ```js
 {

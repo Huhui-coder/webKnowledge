@@ -1010,3 +1010,15 @@ console.log(window.Hit)
 # 10. 讲讲跨域, cookie 可以跨域吗? localStorage 可以跨域吗？
 
 解决跨域的方法: `JSOP`、`CORS`、`postmessage`、`websocket`、Nginx 反向代理等等。
+
+# 11.如何让`display`出现动画
+问题描述：当一个元素最开始的属性为`display:none`时，当你手动修改`display: block`，并且在之后执行一些动画操作。所操作的DOM将会一种比较生硬的方式，出现在动画的最终状态。说明动画并没有执行。
+解决方案，在手动修改`display: block`之后，并且在之后执行一些动画操作之前，手动获取一下DOM的位置属性，比如:
+```js
+const app = document.querySelector('#app')
+const height = app.offsetHeight
+```
+然后就会出现动画了。
+方案分析：一系列对DOM的操作都会触发回流或者重绘。
+当我读取dom的这些特殊属性时，浏览器就会强制清空渲染队列一次，让我拿到最新的值。也就是说读取的时候，其实已经是display为"block"了。
+除了手动读取特殊属性清空浏览器渲染队列外，浏览器也会有自己的一个队列阀值，当达到后，会自动清空。这就是为什么在一个for循环里面多次操作DOM，但是它不会真的渲染那么多次的原因，因为浏览器帮我们维护了一个队列，择机渲染。
