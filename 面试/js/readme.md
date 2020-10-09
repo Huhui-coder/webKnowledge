@@ -1003,6 +1003,52 @@ console.log(window.Hit)
 
 - defer、async 
 
+
+defer和async是script标签的两个属性，用于在不阻塞页面文档解析的前提下，控制脚本的下载和执行。 在介绍他们之前，我们有必要先了解一下页面的加载和渲染过程：
+
+## 页面的加载和渲染过程
+
+1. 浏览器通过HTTP协议请求服务器，获取HMTL文档并开始从上到下解析，构建DOM；
+在构建DOM过程中，如果遇到外联的样式声明和脚本声明，则暂停文档解析，创建新的网络连接，并开始下载样式文件和脚本文件；
+2. 样式文件下载完成后，构建CSSDOM；脚本文件下载完成后，解释并执行，然后继续解析文档构建DOM
+完成文档解析后，将DOM和CSSDOM进行关联和映射，最后将视图渲染到浏览器窗口
+3. 在这个过程中，脚本文件的下载和执行是与文档解析同步进行，也就是说，它会阻塞文档的解析，如果控制得不好，在用户体验上就会造成一定程度的影响
+4. 完成文档解析后，将DOM和CSSDOM进行关联和映射，最后将视图渲染到浏览器窗口 在这个过程中，脚本文件的下载和执行是与文档解析同步进行，也就是说，它会阻塞文档的解析，如果控制得不好，在用户体验上就会造成一定程度的影响
+## defer和async的原理
+![defer和async原理](https://user-gold-cdn.xitu.io/2019/6/27/16b96e86f8fcfb58?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+1. defer 和 async 在网络读取（下载）这块儿是一样的，都是异步的（相较于 HTML 解析）
+2. 它俩的差别在于脚本下载完之后何时执行，显然defer是最接近我们对于应用脚本加载和执行的要求的
+3. async 则是一个乱序执行的主，反正对它来说脚本的加载和执行是紧紧挨着的，所以不管你声明的顺序如何，只要它加载完了就会立刻执行
+
+所以相对于默认的script引用，这里配合defer和async就有两种新的用法，它们之间什么区别那？
+
+1. 默认引用 script:<script type="text/javascript" src="x.min.js"></script>
+
+
+当浏览器遇到 script 标签时，文档的解析将停止，并立即下载并执行脚本，脚本执行完毕后将继续解析文档。
+
+2. async模式 <script type="text/javascript" src="x.min.js" async="async"></script>
+
+
+当浏览器遇到 script 标签时，文档的解析不会停止，其他线程将下载脚本，脚本下载完成后开始执行脚本，脚本执行的过程中文档将停止解析，直到脚本执行完毕。
+
+3. defer模式 <script type="text/javascript" src="x.min.js" defer="defer"></script>
+
+
+当浏览器遇到 script 标签时，文档的解析不会停止，其他线程将下载脚本，待到文档解析完成，脚本才会执行。
+>所以async和defer的最主要的区别就是async是异步下载并立即执行，然后文档继续解析，defer是异步加载后解析文档，然后再执行脚本，这样说起来是不是理解了一点了
+## 关于defer我们需要注意下面几点：
+
+defer只适用于外联脚本，如果script标签没有指定src属性，只是内联脚本，不要使用defer
+如果有多个声明了defer的脚本，则会按顺序下载和执行
+defer脚本会在DOMContentLoaded和load事件之前执行
+
+## 关于async，也需要注意以下几点：
+
+只适用于外联脚本，这一点和defer一致
+如果有多个声明了async的脚本，其下载和执行也是异步的，不能确保彼此的先后顺序
+async会在load事件之前执行，但并不能确保与DOMContentLoaded的执行先后顺序
+
 - service-worker, PWA渐进式web应用 [PWA](https://lavas.baidu.com/pwa/README)
 
 - localStorage、sessionStorage、cookie、session
