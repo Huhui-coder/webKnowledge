@@ -1001,8 +1001,28 @@ console.log(window.Hit)
 
 - preload，prefetch 和 preconnect [preload](https://juejin.im/post/6844903646996480007)
 
-- defer、async 
+它们带来的好处包括允许前端开发人员来优化资源的加载，减少往返路径并且在浏览页面时可以更快的加载到资源。
 
+preload 预加载资源 设定资源加载的优先级为最高
+```js
+<link rel="preload" href="image.png">
+
+<link rel="preload" href="https://example.com/fonts/font.woff" as="font" crossorigin>
+
+<!-- Via markup -->
+<link rel="preload" href="/css/mystyles.css" as="style">
+
+```
+   
+prefetch 低优先级的资源加载提示
+
+Prefetch 是一个低优先级的资源提示，允许浏览器在后台（空闲时）获取将来可能用得到的资源，并且将他们存储在浏览器的缓存中。
+
+preconnect 在正式http请求前做一些操作
+
+preconnect 允许浏览器在一个 HTTP 请求正式发给服务器前预先执行一些操作，这包括 DNS 解析，TLS 协商，TCP 握手，这消除了往返延迟并为用户节省了时间。
+
+- defer、async 
 
 defer和async是script标签的两个属性，用于在不阻塞页面文档解析的前提下，控制脚本的下载和执行。 在介绍他们之前，我们有必要先了解一下页面的加载和渲染过程：
 
@@ -1052,10 +1072,48 @@ async会在load事件之前执行，但并不能确保与DOMContentLoaded的执�
 - service-worker, PWA渐进式web应用 [PWA](https://lavas.baidu.com/pwa/README)
 
 - localStorage、sessionStorage、cookie、session
+从生命周期，存储大小，常见用途等几个方面来理解。
+[前端存储](https://juejin.im/post/6844903945253421069)
 
 # 10. 讲讲跨域, cookie 可以跨域吗? localStorage 可以跨域吗？
 
 解决跨域的方法: `JSOP`、`CORS`、`postmessage`、`websocket`、Nginx 反向代理等等。
+
+JSONP跨域原理：script 标签本身是不跨域的，利用script 请求api 接口，再使用?callback=JSONPCALLBACK的方式来获取返回的数据，其中，JSONPCALLBACK方法就是客户端获取返回数据的方法。
+缺点是因为是依靠script来发请求，所以只支持get的请求来处理跨域。
+
+CORS的跨域原理：服务器端添加一下代码：
+```js
+Access-Control-Allow-Origin: '*'
+Access-Control-Allow-Methods: '*',
+Access-Control-Expose-Headers: '*'
+```
+
+在本地开发时，通过是借助webpack 的 devServer来配置跨域。
+```js
+devServer: {
+    proxy: {
+      '/api': {
+        target: 'http://10.12.6.24:30463',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/api': ''
+        }
+      }
+    }
+  },
+```
+然后在axios 统一配置baseURL，那么以/api 开头的api 请求都会经过devServe 的代理，代理到 http://10.12.6.24:30463 服务器处。
+
+线上运行时，通常是通过配置Nginx 写配置文件以达到反向代理的作用。
+
+Nginx 反向代理配置。以代理服务器来接受Internet上的连接请求，然后将请求转发给内部网络上的服务器。
+```js
+ location /some/path/ {
+    proxy_pass http://www.example.com/link/;
+}
+```
+cookie 和 localStorage 都不可以跨域。
 
 # 11.如何让`display`出现动画
 问题描述：当一个元素最开始的属性为`display:none`时，当你手动修改`display: block`，并且在之后执行一些动画操作。所操作的DOM将会一种比较生硬的方式，出现在动画的最终状态。说明动画并没有执行。
