@@ -242,4 +242,52 @@ flex: 0 1 aut0; => flex-grow: 0;[如果存在剩余空间，也不放大。] fle
 
 默认值为auto，表示继承父元素的align-items属性，如果没有父元素，则等同于stretch。
 
+## 2. 如何使用css3 进行自适应和响应式布局
+自适应是一套模板适应所有终端，但每种设备上看到的版式是一样的，俗称宽度自适应。
+- 使用 `flexlib` 淘宝自适应解决方案。其原理就是设置默认的根字体 root font-size 的大小，然后 监听 浏览器的缩放时间，再根据浏览的视口宽高动态的去改变 root font-size。页面中的css 单位都用rem 来设置，从而达到自适应的效果。
+缺点： 1.会有不能整除的情况，会有小数点出现，所以这个方案产生的结果并不是很精确。
+2.由于是监听的浏览器缩放( window.addEventListener('resize', setRemUnit))事件，是属于触发频率比较高的时间，在正式使用时还要注意使用防抖，节流。以此来节省性能。
 
+- 使用 vw css 单位, flex 布局方法来实现自适应。
+不用写额外的js 代码。简单好用。
+
+响应式布局是一套模板适应所有终端，但每种设备看到的版式可以是不一样的。
+```js
+@media (orientation:portrait) and (max-width:460px) {
+.video .innerBox .news a.more {
+display: none;
+}
+.video .innerBox .news span {
+display: none;
+}
+.video .innerBox .news {
+width: 100%;
+}
+.video .innerBox .news ul {
+width: 100%;
+text-align: center;
+}
+}
+```
+
+
+## 3. 绘制三角形，圆形和菱形
+
+```css
+// 使用 border 来实现，width设置为0, 一边的border 为有颜色，三边的border 为 透明色。三角形。
+div {
+    width: 0;
+    height: 0;
+    border: 40px solid;
+    border-color: transparent transparent red;
+}
+```
+```css
+// 使用 border-radius: 50%; 来实现。圆形。
+.circle {
+	border-radius: 50%;
+	width: 200px;
+	height: 200px; 
+	/* 宽度和高度需要相等 */
+}
+```
