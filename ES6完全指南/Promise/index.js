@@ -2,7 +2,9 @@
 // 有三种状态：pending（进行中）、fulfilled（已成功）和rejected（已失败）。
 
 
-//缺点：Promise也有一些缺点。首先，无法取消Promise，一旦新建它就会立即执行，无法中途取消。其次，如果不设置回调函数，Promise内部抛出的错误，不会反应到外部。第三，当处于pending状态时，无法得知目前进展到哪一个阶段（刚刚开始还是即将完成）。
+//缺点：Promise也有一些缺点。首先，无法取消Promise，一旦新建它就会立即执行，无法中途取消。
+// 其次，如果不设置回调函数，Promise内部抛出的错误，不会反应到外部。
+// 第三，当处于pending状态时，无法得知目前进展到哪一个阶段（刚刚开始还是即将完成）。
 
 // const promise = new Promise((resolve, reject) => {
 //     const value = 'fulfilled'
@@ -12,6 +14,7 @@
 //         reject(value)
 //     }
 // })
+
 // promise.then(function (value) {
 //     console.log(value)
 // }, function (error) {
