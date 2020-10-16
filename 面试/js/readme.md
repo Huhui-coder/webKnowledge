@@ -1113,7 +1113,53 @@ Nginx 反向代理配置。以代理服务器来接受Internet上的连接请求
     proxy_pass http://www.example.com/link/;
 }
 ```
-cookie 和 localStorage 都不可以跨域。
+localStorage 不可以跨域, 可以自己封装一个可以设置过期时间的localStorage。
+
+如何设计
+```js
+localstorage原生是不支持设置过期时间的，想要设置的话，就只能自己来封装一层逻辑来实现：
+// 存的时候，将过期时间加进去，
+// 取的时候，判断是否过期，过期就清除掉，没过期就返回它。
+
+function set(key,value){
+  var curtime = new Date().getTime();//获取当前时间
+  localStorage.setItem(key,JSON.stringify({val:value,time:curtime}));//转换成json字符串序列
+}
+function get(key,exp)//exp是设置的过期时间
+{
+  var val = localStorage.getItem(key);//获取存储的元素
+  var dataobj = JSON.parse(val);//解析出json对象
+  if(new Date().getTime() - dataobj.time > exp)//如果当前时间-减去存储的元素在创建时候设置的时间 > 过期时间
+  {
+    console.log("expires");//提示过期
+  }
+  else{
+    console.log("val="+dataobj.val);
+  }
+}
+
+
+```
+
+cookie，可以实现跨域传递。
+
+跨域时响应头: Access-control-Allow-credentials: true.
+
+【前端】在axios 中：
+
+```js
+// 在请求拦截器中，将config 配置项中的 withCredentials 设置为true.
+axios.interceptors.request.use(config => {
+  config.withCredentials = true;
+  return config;
+});
+```
+【后端】设置响应头：
+
+```js
+"Access-Control-Allow-Origin": Request Headers Origin
+"Access-Control-Allow-Credentials": true
+```
 
 # 11.如何让`display`出现动画
 问题描述：当一个元素最开始的属性为`display:none`时，当你手动修改`display: block`，并且在之后执行一些动画操作。所操作的DOM将会一种比较生硬的方式，出现在动画的最终状态。说明动画并没有执行。
@@ -1126,3 +1172,76 @@ const height = app.offsetHeight
 方案分析：一系列对DOM的操作都会触发回流或者重绘。
 当我读取dom的这些特殊属性时，浏览器就会强制清空渲染队列一次，让我拿到最新的值。也就是说读取的时候，其实已经是display为"block"了。
 除了手动读取特殊属性清空浏览器渲染队列外，浏览器也会有自己的一个队列阀值，当达到后，会自动清空。这就是为什么在一个for循环里面多次操作DOM，但是它不会真的渲染那么多次的原因，因为浏览器帮我们维护了一个队列，择机渲染。
+
+# 12. 对比下 Object.defineProperty() 和 proxy() 
+Object.defineProperty(obj, prop, descriptor)
+- obj 要定义的属性对象
+- prop 要定义或修改的属性名称
+- descriptor 要定义或修改的属性描述符(分为数据描述符和存取描述符)
+
+数据描述符：
+configurable
+当且仅当该属性的 configurable 键值为 true 时，该属性的描述符才能够被改变，同时该属性也能从对应的对象上被删除。
+默认为 false。
+enumerable
+当且仅当该属性的 enumerable 键值为 true 时，该属性才会出现在对象的枚举属性中。
+默认为 false。
+数据描述符还具有以下可选键值：
+
+value
+该属性对应的值。可以是任何有效的 JavaScript 值（数值，对象，函数等）。
+默认为 undefined。
+writable
+当且仅当该属性的 writable 键值为 true 时，属性的值，也就是上面的 value，才能被赋值运算符改变。
+默认为 false。
+
+存取描述符：
+get
+属性的 getter 函数，如果没有 getter，则为 undefined。当访问该属性时，会调用此函数。执行时不传入任何参数，但是会传入 this 对象（由于继承关系，这里的this并不一定是定义该属性的对象）。该函数的返回值会被用作属性的值。
+默认为 undefined。
+set
+属性的 setter 函数，如果没有 setter，则为 undefined。当属性值被修改时，会调用此函数。该方法接受一个参数（也就是被赋予的新值），会传入赋值时的 this 对象。
+默认为 undefined。
+
+**如果一个描述符同时拥有 value 或 writable 和 get 或 set 键，则会产生一个异常。**
+
+Proxy 对象用于定义基本操作的自定义行为（如属性查找、赋值、枚举、函数调用等）。
+语法：const p = new Proxy(target, handler)
+
+target
+要使用 Proxy 包装的目标对象（可以是任何类型的对象，包括原生数组，函数，甚至另一个代理）。
+handler
+一个通常以函数作为属性的对象，各属性中的函数分别定义了在执行各种操作时代理 p 的行为。
+proxy 除了可以拦截get 和 set 以外，还可以拦截 delete new apply in 等操作。
+可以用来定义一个具有数据验证功能的函数，类似于elementui 的表单验证
+```js
+// 使用proxy 进行验证功能
+// let validator = {
+//     set: function (obj, prop, value) {
+//         if (prop === 'age') {
+//             if (!Number.isInteger(value)) {
+//                 throw new TypeError('The age is not an integer');
+//             }
+//             if (value > 200) {
+//                 throw new RangeError('The age seems invalid');
+//             }
+//         }
+//         obj[prop] = value;
+//         // 表示成功
+//         return true;
+//     }
+// };
+
+// let person = new Proxy({}, validator);
+
+// person.age = 100;
+
+// console.log(person.age);
+// // 100
+
+// person.age = 'young';
+// // 抛出异常: Uncaught TypeError: The age is not an integer
+
+// person.age = 300;
+// // 抛出异常: Uncaught RangeError: The age seems invalid
+```
