@@ -1,3 +1,157 @@
+# webpack 在项目中的作用
+项目构建是什么？包含哪些方面？
+- 代码转换：将编译代码中的js、less、scss
+- 文件优化：减少文件的大小，对文件进行压缩。(减少服务器资源占用，从而提高浏览器渲染速度)
+- 代码分割：提取首页加载不需要用到的代码，让其进行异步加载
+- 模块合并：在采用模块化的项目里会有很多个模块和文件，需要构建功能把模块分类合并成一个文件
+- 自动刷新：监听本地源代码的变化，自动重新构建、刷新浏览器
+- 代码校验：js 语法的检查
+- 自动发布：更新完代码后，自动构建出线上发布代码并传输给发布系统
+
+使用 webpack + 代码部署脚本 即可实现 一键完成代码构建和项目上线。
+
+# webpack 核心概念
+- Entry：配置模块入口
+- Output：配置如何输出最终想要的代码
+- Module：配置处理模块的规则
+- Resolve：配置寻找模块的规则
+- Plugins：配置扩展插件
+- DevServer：配置DevServer，就是起一个服务
+- 其他配置项：其他零散的配置项
+- 整体配置结构：整体的描述各配置项的结构
+- 多种配置类型：配置文件不不止可以返回一个 Object，还可以返回其他格式
+- 配置总结：寻找配置Webpack 的规则，减少思维负担。
+
+# webpack 基本配置api 
+
+## entry和ouput 是配置入口文件和打包输出文件【如何配置多页面应用?】
+## Loader
+由于 webpack 默认只支持js和json 的格式进行打包，对于像css,font,less,scss,图片啥的资源是无法直接进行处理的。
+需要配置loader 去支持其他文件类型解析成为webpack 能够打包的模块，并可加入到依赖图中。
+常用的loader 有
+file-loader【用来处理图片】,
+url-loader【用来处理图片】,
+vue-loader【处理.vue文件】,
+style-loader, css-loader, less-loader,postcss-loader
+
+讲一个webpack 在使用Loader进行性能优化的例子。
+```js
+// 其中的limit 字段表示，如果图片的大小小于 所设置的值，那么该图片会转化成为base64打包进js代码中，从而减少http请求数。
+module: {
+  rules: [{
+    test: /\.png$/,
+    use: {
+      loader: 'url-loader',
+      options: {
+        name: '[name]_[hash].[ext]',
+        outputPath: 'images/',
+        limit: 10240,
+      }
+    }
+  }]
+},
+```
+总结：loader 的作用就是对不同类型的文件进行打包
+## plugins
+作用是为webpack 提供额外的能力，以增强webpack,用于对bundle文件的优化，资源管理与环境变量的注入。
+
+有类似于`vue`的生命周期，作用于webpack构建的整个流程中。
+
+常用的plugins 
+`html-webpack-plugin`:这个插件会帮助我们在 webpack 打包结束后，自动生成一个 html 文件，并把打包产生文件引入到这个 html 文件中去。
+```js
+// 给 webpack 添加一项配置 plugins
+...
+plugins: [
+  new htmlWebpackPlugin({
+    template: 'src/index.html', // 模板文件
+  }),
+]
+...
+```
+`clean-webpack-plugin`: 这个插件能帮我们在打包之前先删除掉打包出来的文件夹。
+
+```js
+// 引入 clean-webpack-plugin
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+
+...
+plugins: [
+  new htmlWebpackPlugin({
+    template: 'src/index.html', // 模板文件
+  }),
+  new cleanWebpackPlugin(),
+]
+...
+```
+## 配置sourceMap 
+sourceMap 是一个映射关系，能够帮我们更好的定位源码的错误。
+![source配置](https://webpack-doc-20200329.now.sh/assets/img/sourcemap4.4134342d.png)
+项目开发的最佳实践：
+开发环境下
+```js
+devtool: 'cheap-module-eval-source-map'
+```
+生产环境下
+```js
+devtool: 'cheap-module-source-map'
+```
+如果不想将sourceMap文件打包到最终的包里面，可以设置`devtool: 'none'`。这样可以极大的减少bundle包的体积，但是也看不了源代码了。
+## 配置webpack-dev-server
+我们在平时的开发过程当中，一般在我们的项目中肯定去会发一些 ajax 请求，而这个请求是基于 http 协议的，所以我们需要起一个服务器，在我们起的这个服务器中去完成我们的一系列功能开发。
+
+这个时候就会用到 webpack-dev-derver，它有很多的参数可供我们配置，比如项目启动的时候自动帮我们开启浏览器、指定端口起服务器等、自动帮我们刷新浏览器
+
+
+
+# 在项目中使用webpack 做根据代码所处环境动态改变项目中的baseURL
+需求：可能一套代码会处于多个不同的环境，包含本地环境，测试环境，预发布环境，正式环境。每个环境，后端请求的api 地址的前缀是不一样的。
+那么我们就需要让代码在不同的环境中自动的动态配置api前缀。
+如何实现？
+```script
+npm i minimist -D
+```
+minimist 是个轻量级的 node.js 获取命令行参数的一个库，会将参数解析成一个字典。
+
+因为我们的npm script 脚本命令一般是 `vue-cli-service serve --HOST_URL /api/`
+
+那么通过 process.argv.slice(2) 就可以获取到我们需要的参数了
+```js
+const argv = require('minimist')(process.argv.slice(2))
+```
+
+```js
+// webpack配置，将获取到的参数写到webpack的环境变量中去
+// 这里的process.env就是Nodejs提供的一个API，它返回一个包含用户环境信息的对象。如果我们给Nodejs 设置一个环境变量，并把它挂载在 process.env 返回的对象上，便可以在代码中进行相应的环境判断。
+ chainWebpack: config => {
+    config.plugin('define').tap(args => {
+      args[0]['process.env'].HOST_URL = `"${argv.HOST_URL || ''}"`
+      return args
+    })
+  }
+```
+```npm script 
+    "serve": "vue-cli-service serve --HOST_URL /api/",
+    "Prebuild": "vue-cli-service serve --HOST_URL /pre/api/",
+    "build": "vue-cli-service serve --HOST_URL /current/",
+
+```
+
+```js
+// 在axios 配置 baseURL 时，直接使用 process.env 中的 变量值
+const instance = axios.create({
+  baseURL: process.env.HOST_URL, // url = base url + request url
+  timeout: 10000,
+  withCredentials: false
+})
+```
+[参考链接](https://www.jianshu.com/p/19d199f93045)
+[参考链接](https://www.jianshu.com/p/231b931ab389)
+
+
+
+
+
 # 在项目中使用到的webpack 优化配置项
 - 优化打包速度
 - 优化打包文件的体积
@@ -77,32 +231,6 @@ mode可设置`development`和 `production`两个参数
 	 gzip_types text/plain text/css application/json application/javascript application/x-javascript text/xml application/xml application/x
 ```
 
-
-# webpack 在项目中的作用
-项目构建是什么？包含哪些方面？
-- 代码转换：将编译代码中的js、less、scss
-- 文件优化：减少文件的大小，对文件进行压缩。(减少服务器资源占用，从而提高浏览器渲染速度)
-- 代码分割：提取首页加载不需要用到的代码，让其进行异步加载
-- 模块合并：在采用模块化的项目里会有很多个模块和文件，需要构建功能把模块分类合并成一个文件
-- 自动刷新：监听本地源代码的变化，自动重新构建、刷新浏览器
-- 代码校验：js 语法的检查
-- 自动发布：更新完代码后，自动构建出线上发布代码并传输给发布系统
-
-使用 webpack + 代码部署脚本 即可实现 一键完成代码构建和项目上线。
-
-# webpack 核心概念
-- Entry：配置模块入口
-- Output：配置如何输出最终想要的代码
-- Module：配置处理模块的规则
-- Resolve：配置寻找模块的规则
-- Plugins：配置扩展插件
-- DevServer：配置DevServer，就是起一个服务
-- 其他配置项：其他零散的配置项
-- 整体配置结构：整体的描述各配置项的结构
-- 多种配置类型：配置文件不不止可以返回一个 Object，还可以返回其他格式
-- 配置总结：寻找配置Webpack 的规则，减少思维负担。
-
-# webpack 基本配置api 
 
 
 # 如何配置一个多页面入口的应用？

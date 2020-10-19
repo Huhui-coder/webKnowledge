@@ -3,7 +3,7 @@
 ## 1、简述让一个元素在窗口中消失以及垂直水平居中的方法，还有Flex布局的理解。
 
 1. 简述让一个元素在窗口中消失以及垂直水平居中的方法，还有Flex布局的理解。
-能使元素消失的方法有两种，分别是`display: none` 和 `visibility: hidden`
+能使元素消失的方法有两种，分别是`display: none` 和 `visibility: hidden`以及`opacity: 0`
 扩展到`vue`框架的v-if 和 v-show 之间的区别: 
 v-if 背后的原理就是用display:none实现的，是真正将DOM元素去掉了。
 而 v-show 背后的原理便是visibility: hiddren,仅仅是将DOM元素隐藏掉了。
@@ -89,6 +89,22 @@ v-if 背后的原理就是用display:none实现的，是真正将DOM元素去掉
 
 ### 对于`flex`布局的理解
 
+- flex-direction: 决定主轴的方向。
+- flex-wrap: 定义如何换行。
+- flex-flow: 是 flex-direction 和 flex-wrap 的缩写形式， 默认值分别是 row, no-wrap。
+- justify-content: 定义主轴上的对齐方式。
+- align-items: 定义 交叉轴上的对齐方式。
+- align-content: 定义多根轴线的定义方式。
+
+- order: 定义项目的排列顺序
+- flex-grow: 定义项目的放大比例，默认为0，即如果存在剩余空间，也不放大。
+- flex-shrink: 定义项目的缩小比例,默认为1,即空间不足，项目将缩小，值为0时，不缩小。
+- flex-basis: 定义了在分配多余空间之前，项目占据的主轴空间，将覆盖项目定义的width值。
+- flex: 是flex-grow, flex-shrink 和 flex-basis的简写，默认值为0 1 auto。后两个属性可选。
+- align-self: 属性允许单个项目有与其他项目不一样的对齐方式，可覆盖align-items属性。
+
+
+
 传统的布局方案: `display`, `position`, `float`
 但是这种方案对于一些特殊布局是难以实现的。比如说:垂直居中。
 
@@ -103,12 +119,12 @@ v-if 背后的原理就是用display:none实现的，是真正将DOM元素去掉
 
 #### 容器上的属性
 
-- flex-direction
-- flex-wrap
-- flex-flow
-- justify-content
-- align-items
-- align-content
+- flex-direction: 决定主轴的方向
+- flex-wrap: 定义如何换行
+- flex-flow: 是 flex-direction 和 flex-wrap 的缩写形式， 默认值分别是 row, no-wrap.
+- justify-content: 定义主轴上的对齐方式
+- align-items: 定义 交叉轴上的对齐方式
+- align-content: 定义多根轴线的定义方式
 ``` css
 .box {
   flex-direction: row | row-reverse | column | column-reverse;
@@ -181,12 +197,12 @@ v-if 背后的原理就是用display:none实现的，是真正将DOM元素去掉
 
 #### 项目上的属性
 
-- order
-- flex-grow
-- flex-shrink
-- flex-basis
-- flex
-- align-self
+- order: 定义项目的排列顺序
+- flex-grow: 定义项目的放大比例，默认为0，即如果存在剩余空间，也不放大。
+- flex-shrink: 定义项目的缩小比例,默认为1,即空间不足，项目将缩小，值为0时，不缩小。
+- flex-basis: 定义了在分配多余空间之前，项目占据的主轴空间，将覆盖项目定义的width值。
+- flex: 是flex-grow, flex-shrink 和 flex-basis的简写，默认值为0 1 auto。后两个属性可选
+- align-self: 属性允许单个项目有与其他项目不一样的对齐方式，可覆盖align-items属性
 
 ``` css
 .item {

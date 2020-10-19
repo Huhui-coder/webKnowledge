@@ -1187,7 +1187,6 @@ enumerable
 当且仅当该属性的 enumerable 键值为 true 时，该属性才会出现在对象的枚举属性中。
 默认为 false。
 数据描述符还具有以下可选键值：
-
 value
 该属性对应的值。可以是任何有效的 JavaScript 值（数值，对象，函数等）。
 默认为 undefined。
