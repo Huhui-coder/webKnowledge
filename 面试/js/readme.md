@@ -862,6 +862,7 @@ window.onload = (() => {
     window.requestAnimationFrame(step);
 })
 ```
+
 # 7.讲讲闭包
 
 从以下几个方面来讲闭包：
@@ -1076,7 +1077,6 @@ async会在load事件之前执行，但并不能确保与DOMContentLoaded的执�
 [前端存储](https://juejin.im/post/6844903945253421069)
 
 # 10. 讲讲跨域, cookie 可以跨域吗? localStorage 可以跨域吗？
-
 解决跨域的方法: `JSOP`、`CORS`、`postmessage`、`websocket`、Nginx 反向代理等等。
 
 JSONP跨域原理：script 标签本身是不跨域的，利用script 请求api 接口，再使用?callback=JSONPCALLBACK的方式来获取返回的数据，其中，JSONPCALLBACK方法就是客户端获取返回数据的方法。
