@@ -1,3 +1,135 @@
+# 常见的loader有哪些
+如何处理webpack打包文件中的静态资源
+在module对象下的rules数组中，来配置静态资源的解析规则。
+```js
+module: {
+        rules: [
+            {
+                test: /\.(gif|png|jpe?g|eot|woff|ttf|svg|pdf)$/, // 条件匹配，还可以是 include 和 exclude 三个配置来选中 loader 要应用规则的文件
+                use: {
+                    loader: 'file-loader',
+                    options: {
+                        name: '[name].[ext]',
+                        limit: 10240,
+                        outputPath: 'images/' // 将图片打包进某个具体的文件夹中
+                    }
+                }
+            }]
+    }
+```
+file-loader 可以limit 当 图片大小大于这个值时，将图片打包进 /images 文件夹中，当图片小于这个值时，将图片转化为base64的格式打包进js中。 这个选项可以对【最终打包的文件大小】和【减少http请求】起到一个平衡的作用。
+
+如何配置 less 模块化
+模块化的目的在于， 同一class 类名 互相不干扰
+
+```js
+{
+                test: /\.less$/,
+                use: ['style-loader', {
+                    loader: 'css-loader',
+                    options: {
+                        importLoaders: 2,
+                        modules: true, // 实现less 模块化
+                    }
+                }, 'less-loader', 'postcss-loader'],
+                exclude: path.resolve(__dirname, 'node_modules')
+
+            }
+```
+再将less 文件的引入方式改一下
+原来是 `import './index.less'`
+改为 `import style from './index.less'`
+
+如何实现 px2rem 在webpack 中。
+webpack中可以配置 less 的解析规则 使用 px2rem-loader 和 amfe-flexible来达到这个目的
+```js
+{
+                test: /\.less$/,
+                use: ['style-loader', {
+                    loader: 'css-loader',
+                    options: {
+                        importLoaders: 2,
+                        modules: true, // 实现less 模块化
+                    }
+                }, 'less-loader', 'postcss-loader',
+                    {
+                        loader: 'px2rem-loader',
+                        options: {
+                            remUnit: 75, // rem 相对 px 转换的单位，1rem = 75px
+                            remPrecision: 8 // px 转化为 rem 小数点的位数
+                        }
+                    }
+                ],
+                exclude: path.resolve(__dirname, 'node_modules')
+            }
+```
+# 常见的plugin 有哪些？
+最常见的是 `html-webpack-plugin` 这个plugin 主要作用是将打包后的资源包含(js,css)自动的插入最终的index.html中，并且你还能指定一个index.html 作为 template 模板，可以在 html-webpack-plugin 构造函数的配置对象中设置。
+```js
+plugins: [
+        new htmlWebpackPlugin({
+            template: './index.html',
+            title: 'Hit',
+            inject: true, // 可选值有 true 或者 body[所有的js资源插入到body元素的底部] head[所有js资源插入到heade元素中] false [所有的css,js 资源都不会注入到模板文件中]
+            minify: false, // 是否压缩html
+        })
+    ]
+```
+清除上一次打包遗留下来的打包文件。
+`clean-webpack-plugin`
+mini-css-extract-plugin：Webpack4.0 中将 css 从 bundle 文件中提取成一个独立的 css 文件；在 3.0 版本使用 extract-text-webpack-plugin。
+
+terser-webpack-plugin：压缩 js 的插件，支持压缩 es6 代码，webpack4.0 默认使用的一个压缩插件，在 3.0 版本使用 uglifyjs-webpack-plugin 来压缩 js 代码。
+
+copy-webpack-plugin：将文件或者文件夹拷贝到构建的输出目录
+
+zip-webpack-plugin：将打包出的资源生成一个 zip 包
+
+optimize-css-assets-webpack-plugin：压缩 css 代码的插件
+
+webpack.DefinePlugin：创建一个在 编译 时可以配置的全局常量，比如设置 process.env.NODE_ENV，可以在 js 业务代码中使用。
+
+webpack.DllPlugin：抽取第三方 js，使用 dll 打包，笔者会在之后 Webpack 性能优化将到。
+
+# webpack-dev-server 插件的作用
+使用 http协议打开项目，项目启动的时候自动帮我们开启浏览器、指定端口起服务器等、自动帮我们刷新浏览器。
+
+配置跨域使用proxy 选项。它的原理是使用 **http-proxy-middleware** 去把请求代理到一个外部的服务器。
+
+解决跨域原理：上面的参数列表中有一个changeOrigin 参数, 是一个布尔值, 设置为 true, 本地就会虚拟一个服务器接收你的请求并代你发送该请求,
+```js
+module.exports = {
+  //...
+  devServer: {
+    '/proxy': {
+      target: 'http://your_api_server.com',
+      changeOrigin: true,
+      pathRewrite: {
+        '^/proxy': ''
+      }
+    }
+  }
+};
+```
+# 配置HMR (热模块替换)
+# 打包ES6代码，(兼容性处理)
+```js
+module: {
+        rules: [
+            {
+                test: /\.js$/,
+                use: ['babel-loader'], // 还需要安装 @babel/core 
+                include: path.resolve(__dirname, 'src')
+            }]}
+```
+我们可以在项目根目录下 创建 .babelrc 文件来更好的管理 babel 的配置
+```js
+// .babelrc
+{
+  "presets": ["@babel/preset-env"]
+}
+```
+
 # webpack 在项目中的作用
 项目构建是什么？包含哪些方面？
 - 代码转换：将编译代码中的js、less、scss
