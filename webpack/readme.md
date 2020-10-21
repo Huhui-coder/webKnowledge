@@ -1,6 +1,9 @@
 # 常见的loader有哪些
+## file-loader
+
 如何处理webpack打包文件中的静态资源
 在module对象下的rules数组中，来配置静态资源的解析规则。
+
 ```js
 module: {
         rules: [
@@ -18,6 +21,8 @@ module: {
     }
 ```
 file-loader 可以limit 当 图片大小大于这个值时，将图片打包进 /images 文件夹中，当图片小于这个值时，将图片转化为base64的格式打包进js中。 这个选项可以对【最终打包的文件大小】和【减少http请求】起到一个平衡的作用。
+
+## less-loader
 
 如何配置 less 模块化
 模块化的目的在于， 同一class 类名 互相不干扰
@@ -40,8 +45,11 @@ file-loader 可以limit 当 图片大小大于这个值时，将图片打包进 
 原来是 `import './index.less'`
 改为 `import style from './index.less'`
 
+## px2rem-loader
+
 如何实现 px2rem 在webpack 中。
 webpack中可以配置 less 的解析规则 使用 px2rem-loader 和 amfe-flexible来达到这个目的
+
 ```js
 {
                 test: /\.less$/,
@@ -64,6 +72,9 @@ webpack中可以配置 less 的解析规则 使用 px2rem-loader 和 amfe-flexib
             }
 ```
 # 常见的plugin 有哪些？
+
+## html-webpack-plugin
+
 最常见的是 `html-webpack-plugin` 这个plugin 主要作用是将打包后的资源包含(js,css)自动的插入最终的index.html中，并且你还能指定一个index.html 作为 template 模板，可以在 html-webpack-plugin 构造函数的配置对象中设置。
 ```js
 plugins: [
@@ -75,8 +86,22 @@ plugins: [
         })
     ]
 ```
+## clean-webpack-plugin
+
 清除上一次打包遗留下来的打包文件。
 `clean-webpack-plugin`
+
+```
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+
+module.exports = {
+	...
+	plugins: [
+   new CleanWebpackPlugin()
+	]
+}
+```
+
 mini-css-extract-plugin：Webpack4.0 中将 css 从 bundle 文件中提取成一个独立的 css 文件；在 3.0 版本使用 extract-text-webpack-plugin。
 
 terser-webpack-plugin：压缩 js 的插件，支持压缩 es6 代码，webpack4.0 默认使用的一个压缩插件，在 3.0 版本使用 uglifyjs-webpack-plugin 来压缩 js 代码。
@@ -391,4 +416,5 @@ mode可设置`development`和 `production`两个参数
 # 你在项目中是如何做webpack优化的?
 
 首先讲下为何要优化？减少本地开发时启动的时间，减少打包的时间，减少打包过后的体积从而提高页面的访问速度。
+
 
