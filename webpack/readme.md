@@ -115,6 +115,50 @@ optimize-css-assets-webpack-plugin：压缩 css 代码的插件
 webpack.DefinePlugin：创建一个在 编译 时可以配置的全局常量，比如设置 process.env.NODE_ENV，可以在 js 业务代码中使用。
 
 webpack.DllPlugin：抽取第三方 js，使用 dll 打包，笔者会在之后 Webpack 性能优化将到。
+## 使用 html-webpack-externals-plugin 
+可以将一些公用包提取出来使用 cdn 引入，不打入 bundle 中：
+
+# 配置 tree-shaking
+能够在模块的层面上做到打包后的代码只包含被引用并被执行的模块，而不被引用或不被执行的模块被删除掉，以起到减包的效果。
+在生产环境下，webpack 自动开启了 tree-shaking 无需更多的配置。
+
+在对于 `import index.less` 或 `import '@babel/polly-fill'` 这种只有一个import 而无 export 的代码，webpack 在进行tree-shaking 时会自动忽略掉，而不进行打包，所以打包后的文件根本就没有index.less 和 @babel/polly-fill这个文件。
+在 package.json文件中
+```js
+{
+  "name": "webpack",
+  "version": "1.0.0",
+  "description": "",
+  "sideEffects": false, // 对所有的文件都启用 tree_shaking
+  // ...
+}
+```
+而为了配置生效，我们需要将配置改为
+```js
+// 在遇到碰到上面的几个模块，我们就不去进行 tree_shaking。
+"sideEffects": [
+  "*.less",
+  "@babel/polly-fill",
+]
+```
+## tree-shaking 的局限性
+- 只能是静态声明和引用的 ES6 模块，不能是动态引入和声明的。
+
+ES6 Module 是静态的，在代码编译阶段就能确定，模块之间的内部结构。
+但是，类似这种代码在打包时会报错
+```js
+// webpack编译时会报错
+if (condition) {
+  import module1 from './module1';
+} else {
+  import module2 from './module2';
+}
+```
+CommonJS   是动态的，模块的依赖关系建立在代码运行阶段。
+- 只能处理模块级别，不能处理函数级别的冗余；
+- 只能处理 JS 相关冗余代码，不能处理 CSS 冗余代码。
+
+
 
 # webpack-dev-server 插件的作用
 使用 http协议打开项目，项目启动的时候自动帮我们开启浏览器、指定端口起服务器等、自动帮我们刷新浏览器。
@@ -136,6 +180,15 @@ module.exports = {
   }
 };
 ```
+# 不同环境下使用不同的打包配置
+因为有的时候我们 开发环境 和 生产环境 的打包所要做的事情是不同的。
+
+比如在 开发环境 中我们需要 webpack-dev-server 来帮我们进行快速的开发，同时需要 HMR 热更新帮我们进行页面的无刷新改动。而这些在我们的 生产环境 中都是不需要的。
+# 对于webpack 与浏览器缓存如何处理
+当你重新打包了，如果没做任何的配置的话，打包出来的文件，文件名还是跟之前的一模一样。
+那么当你刷新浏览器重新请求文件的时候，浏览器会直接从缓存中拿，而不是重新向服务器提交请求。
+解决办法在output 配置中，往输出的文件中配置 [contenthash] 占位符。 当内容改变了， [contenthash] 就会改变。对应的文件名也就改变了。
+
 # 配置HMR (热模块替换)
 # 打包ES6代码，(兼容性处理)
 ```js
