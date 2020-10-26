@@ -6,7 +6,7 @@
 能使元素消失的方法有两种，分别是`display: none` 和 `visibility: hidden`以及`opacity: 0`
 扩展到`vue`框架的v-if 和 v-show 之间的区别: 
 v-if 背后的原理就是用display:none实现的，是真正将DOM元素去掉了。
-而 v-show 背后的原理便是visibility: hiddren,仅仅是将DOM元素隐藏掉了。
+而 v-show 背后的原理便是visibility: hidden,仅仅是将DOM元素隐藏掉了。
 搭配回流和重绘来讲解。如果是要频繁显示或隐藏的元素，推荐使用v-show.
 
 前言-什么是回流重绘

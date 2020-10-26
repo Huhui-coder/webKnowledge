@@ -115,7 +115,7 @@ optimize-css-assets-webpack-plugin：压缩 css 代码的插件
 webpack.DefinePlugin：创建一个在 编译 时可以配置的全局常量，比如设置 process.env.NODE_ENV，可以在 js 业务代码中使用。
 
 webpack.DllPlugin：抽取第三方 js，使用 dll 打包，笔者会在之后 Webpack 性能优化将到。
-## 使用 html-webpack-externals-plugin 
+## html-webpack-externals-plugin 
 可以将一些公用包提取出来使用 cdn 引入，不打入 bundle 中：
 
 # 配置 tree-shaking
@@ -183,7 +183,18 @@ module.exports = {
 # 不同环境下使用不同的打包配置
 因为有的时候我们 开发环境 和 生产环境 的打包所要做的事情是不同的。
 
-比如在 开发环境 中我们需要 webpack-dev-server 来帮我们进行快速的开发，同时需要 HMR 热更新帮我们进行页面的无刷新改动。而这些在我们的 生产环境 中都是不需要的。
+比如在 开发环境 中我们需要 `webpack-dev-server` 来帮我们进行快速的开发，同时需要 HMR 热更新帮我们进行页面的无刷新改动。而这些在我们的 生产环境 中都是不需要的。
+讲一个具体的例子吧，不同的环境下，需要设置不同的`baseURL`。如何在打包的时候进行设置。
+可以在`npm script` 脚本中配置 `process.env` 变量。
+然后在 `webpack` 配置中 使用 `DefinePlugin` 这个`plugin` 将 `npm script` 中配置的变量 注入到全局中，以致于在 js 代码中可以直接获取到嗷。
+```js
+chainWebpack: config => {
+    config.plugin('define').tap(args => {
+      args[0]['process.env'].HOST_URL = `"${argv.HOST_URL || ''}"`
+      return args
+    })
+  }
+```
 # 对于webpack 与浏览器缓存如何处理
 当你重新打包了，如果没做任何的配置的话，打包出来的文件，文件名还是跟之前的一模一样。
 那么当你刷新浏览器重新请求文件的时候，浏览器会直接从缓存中拿，而不是重新向服务器提交请求。
